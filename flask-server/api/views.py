@@ -1,13 +1,17 @@
 from flask import Blueprint, jsonify, request, render_template
 import requests
-from . import db
-from .models import Movie, Favorite
+from . import db, logger
+from .models import Movie, Search
 from . import omdb
 
 main = Blueprint('main', __name__)
 
 ## Lena(Yu-Lun) Feature
 def fetch_from_movies(query):
+    # Clear existing data in Search table
+    db.session.query(Search).delete()
+    db.session.commit()
+
     # Encode query for URL
     url_query = requests.utils.quote(query)
     api_url = f"{omdb.base_url}?s={url_query}&apikey={omdb.api_key}"
@@ -27,7 +31,18 @@ def fetch_from_movies(query):
                     'title': movie.get('Title', ''),
                     'year': movie.get('Year', ''),
                 })
+
+                # Create and add each new search result to the database
+                new_search_result = Search(
+                    imdb_id=movie.get('imdbID'),
+                    title=movie.get('Title'),
+                    year=movie.get('Year')
+                )
+
+                db.session.add(new_search_result)
             
+            db.session.commit()  
+
             return jsonify(movies), 200
         else:
             print("No search results found.")
@@ -41,24 +56,35 @@ def search_movies():
     query = request.args.get('query', '')
     return fetch_from_movies(query)
 
-# fetch_from_movies("spider man")
+# 瀏覽我的最愛 Movie Table
+@main.route('/movies/favorites', methods=['GET'])
+def get_favorites():
+    favorites = Movie.query.all()
+    favorite_movies = []  # 初始化空列表
 
-# 加入我的做愛 Table
+    for fav in favorites:
+        favorite_movies.append({'imdb_id': fav.imdb_id, 'title': fav.title, 'year': fav.year})
+
+    return jsonify(favorite_movies), 200
+
 def add_movie_to_favorites(imdb_id):
-    # Check if the movie is already in the favorites
-    if Favorite.query.filter_by(imdb_id=imdb_id).first():
+    logger.info(f"Attempting to add movie with imdb_id: {imdb_id} to favorites")
+
+    existing_favorite = Movie.query.filter_by(imdb_id=imdb_id).first()
+    if existing_favorite:
+        logger.warning(f"Movie with imdb_id: {imdb_id} is already in favorites")
         return {'error': 'Movie already in favorites'}, 409
 
-    # Check if movie exists in the Movie table
-    movie = Movie.query.filter_by(imdb_id=imdb_id).first()
+    movie = Search.query.filter_by(imdb_id=imdb_id).first()
     if not movie:
-        return {'error': 'Movie not found'}, 404
+        logger.error(f"Movie with imdb_id: {imdb_id} not found in search results")
+        return {'error': 'Movie not found in search results'}, 404
 
-    # Add the movie to favorites
-    new_favorite = Favorite(imdb_id=movie.imdb_id, title=movie.title, year=movie.year)
+    new_favorite = Movie(imdb_id=movie.imdb_id, title=movie.title, year=movie.year)
     db.session.add(new_favorite)
     db.session.commit()
 
+    logger.info(f"Movie with imdb_id: {imdb_id} successfully added to favorites")
     return {'message': 'Movie added to favorites'}, 201
 
 @main.route('/add_to_favorites', methods=['POST'])
@@ -72,96 +98,7 @@ def add_to_favorites_endpoint():
     result, status_code = add_movie_to_favorites(imdb_id)
     return jsonify(result), status_code
 
-# 瀏覽我的最愛 movie
-@main.route('/favorites', methods=['GET'])
-def get_favorites():
-    favorites = Favorite.query.all()
-    for fav in favorites:
-        favorite_movies = [
-            {'imdb_id': fav.imdb_id, 'title': fav.title, 'year': fav.year}
-        ]
-    return jsonify(favorite_movies), 200
-
-# 從我的最愛刪除 movie
-@main.route('/remove_from_favorites/<imdb_id>', methods=['DELETE'])
-def remove_from_favorites(imdb_id):
-    favorite = Favorite.query.filter_by(imdb_id=imdb_id).first()
-    if favorite:
-        db.session.delete(favorite)
-        db.session.commit()
-        return jsonify({'message': 'Movie removed from favorites'}), 200
-    else:
-        return jsonify({'error': 'Movie not found in favorites'}), 404
-
-# 稍待
-# @main.route('/favorite_movie', methods=['POST'])
-# def favorite_movie():
-#     if request.is_json:
-#         # 找到使用者選擇的電影＿id
-#         imdb_id = request.get_json().get('id')
-#         # 從資料庫中找到該電影
-#         movie = Movie.query.get(imdb_id)
-#         # 如果電影存在，將電影資料轉換為字典格式
-#         if movie:
-#             formatted_movie = {
-#                 "id": movie.id,
-#                 "title": movie.title,
-#                 "year": movie.year,
-#                 "imdb_id": movie.imdb_id,
-#                 "poster": movie.poster
-#             }
-#             # 返回電影資料
-#             return jsonify(formatted_movie)
-#         else:
-#             # 如果電影不存在，返回 404 錯誤
-#             return 'Not found', 404
-#     else:
-#         return 'Invalid JSON data', 400
-
-# 以下沒有最後使用到
-# def store_data_in_database(data):
-#     for movie_data in data['Search']:
-#         movie = Movie(
-#             title=movie_data['Title'],
-#             year=movie_data['Year'],
-#             imdb_id=movie_data['imdbID'],
-#             poster=movie_data['Poster']
-#         )
-#         db.session.add(movie)
-
-#     db.session.commit()
-
-# def store_user_data_in_database(user_data):
-#     # 將用戶提供的數據存儲到數據庫
-#     movie = Movie(
-#         title=user_data['Title'],
-#         year=user_data['Year'],
-#         imdb_id=user_data['imdbID'],
-#         # poster=user_data['Poster']
-#     )
-#     db.session.add(movie)
-
-#     db.session.commit()
-    
-# Get the favorite page
-@main.route('/movies/favorites', methods=['GET'])
-def movies():
-    # 從資料庫中獲取所有電影資料
-    all_movies = Movie.query.all()
-
-    # 將電影資料轉換為字典格式
-    if all_movies:
-        formatted_movies = [{
-            # "id": movie.id,
-            "title": movie.title,
-            "year": movie.year,
-            "imdb_id": movie.imdb_id,
-            # "poster": movie.poster
-        } for movie in all_movies]
-
-        return jsonify({"movies": formatted_movies})
-    else:
-        return jsonify({'error': 'No data available'}), 400
+## Yen's Feature
 
 # Get the Create-new-favorite-movie page
 @main.route('/movies/favorite/new', methods=['GET'])
@@ -169,7 +106,7 @@ def get_create_page():
     return render_template('create_movie.html') 
 
 # In the Create-new-favorite-movie page, create the new favorite movie
-@main.route('movies/favorite/new', methods=['POST'])
+@main.route('/movies/favorite/new', methods=['POST'])
 def add_movie():
     if request.is_json:
         # 如果請求是 JSON 格式
