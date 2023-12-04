@@ -105,7 +105,7 @@ def add_to_favorites_endpoint():
 def get_create_page():
     return render_template('create_movie.html') 
 
-# In the Create-new-favorite-movie page, create the new favorite movie
+# In the Create-new-favorite-movie page, create a new favorite movie
 @main.route('/movies/favorite/new', methods=['POST'])
 def add_movie():
     if request.is_json:
@@ -114,10 +114,9 @@ def add_movie():
 
         # 創建新的 Movie 物件
         new_movie = Movie(
+            imdb_id=movie_data.get('imdb_id'),
             title=movie_data.get('title'),
             year=movie_data.get('year'),
-            imdb_id=movie_data.get('imdb_id'),
-            # poster=movie_data.get('poster')
         )
 
         # 將新的電影物件添加到數據庫
@@ -140,22 +139,7 @@ def movie(imdb_id):
             'title': movie.title,
             'year': movie.year,
             'imdb_id': movie.imdb_id,
-            # 'poster': movie.poster
         })
-    else:
-        # 如果電影不存在，返回 404 錯誤
-        return jsonify({'error':'Not found the movie.'}), 404
-    
-@main.route('/movies/favorite/<imdb_id>', methods=['DELETE'])
-def delete_movie(imdb_id):
-    # 從數據庫中查找電影
-    movie = Movie.query.get(imdb_id)
-
-    # 如果電影存在，刪除電影
-    if movie:
-        db.session.delete(movie)
-        db.session.commit()
-        return 'Done', 201
     else:
         # 如果電影不存在，返回 404 錯誤
         return jsonify({'error':'Not found the movie.'}), 404
@@ -168,12 +152,7 @@ def get_edit_page(imdb_id):
 
     # 如果電影存在，返回 JSON 數據給前端
     if movie:
-        return jsonify({
-            'title': movie.title,
-            'year': movie.year,
-            'imdb_id': movie.imdb_id,
-            # 'poster': movie.poster
-        })
+        return render_template('edit_movie.html', title=movie.title, year=movie.year, imdb_id=movie.imdb_id)
     else:
         return jsonify({'error':'Not found the movie.'}), 404
 
@@ -186,10 +165,24 @@ def update_movie(imdb_id):
     # 如果電影存在，更新電影
     if movie:
         movie_data = request.get_json()
+        movie.imdb_id = movie_data.get('imdb_id')
         movie.title = movie_data.get('title')
         movie.year = movie_data.get('year')
-        movie.imdb_id = movie_data.get('imdb_id')
-        # movie.poster = movie_data.get('poster')
+        db.session.commit()
+        return 'Done', 201
+    else:
+        # 如果電影不存在，返回 404 錯誤
+        return jsonify({'error':'Not found the movie.'}), 404
+
+# delete the specific movie
+@main.route('/movies/favorite/<imdb_id>', methods=['DELETE'])
+def delete_movie(imdb_id):
+    # 從數據庫中查找電影
+    movie = Movie.query.get(imdb_id)
+
+    # 如果電影存在，刪除電影
+    if movie:
+        db.session.delete(movie)
         db.session.commit()
         return 'Done', 201
     else:
