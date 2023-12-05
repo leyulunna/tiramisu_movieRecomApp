@@ -24,7 +24,6 @@ def fetch_from_movies(query):
             movies = []
             for movie in data['Search']:
                 # Ensure you access the keys correctly based on the JSON response structure
-                print(f"Id: {movie['imdbID']}, Title: {movie['Title']}, Year: {movie['Year']}")
                 #  These dictionaries are appended to the movies list. The use of movie.get('imdbID', '') and similar lines ensures that if a particular key is not found in the movie data, a default empty string ('') is used instead
                 movies.append({
                     'imdbID': movie.get('imdbID', ''),
