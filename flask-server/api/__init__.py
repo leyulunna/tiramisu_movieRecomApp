@@ -1,16 +1,16 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import logging
 
 db = SQLAlchemy()
 
-# 设置日志记录的基本配置
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    # CORS(app)
+    CORS(app)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
