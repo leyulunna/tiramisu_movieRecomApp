@@ -30,6 +30,7 @@ exit()
 1. User can view all favorite movies(work with YuLun):
 - Allows users to see a comprehensive list of all their favorite movies.
 - Endpoint: Send a GET request to /movies/favorites.
+![Imgur](https://i.imgur.com/Krms6aj.png)
 
 2. User can view the create-new-favorite-movie page:
 - Allows users to see the create-new-favorite-movie page.
@@ -54,3 +55,11 @@ exit()
 7. User can update the details of a specific movie in their favorites:
 - Allows users to update the details of a specific movie using a JSON PUT request.
 - Endpoint: Send a JSON PUT request to /movies/favorite/<imdb_id>, replacing <imdb_id> with the IMDb ID of the movie.
+
+8. User can search movies from The Open Movie Database by inputting keywords on the search bar:
+- Endpoint: Send a JSON GET request to /search_movies?query=<query>, keywords inputted by users.
+![Imgur](https://i.imgur.com/zfKpALO.png)
+
+9. User can add movies from the search results directly to their favorites page.
+- Endpoint: Send a JSON POST request to /add_to_favorites, the payload is {"imdb_id": "<imdb_id>"}
+![Imgur](https://i.imgur.com/9rYgqYz.png)
