@@ -13,8 +13,14 @@ git clone https://github.com/leyulunna/tiramisu_movieRecomApp.git
 ```
 
 2. Install dependencies:
+- Choose one of the following options:
+### Option 1: For regular dependencies
 ```bash
 pipenv install
+```
+### Option 2: For both regular and development dependencies
+```bash
+pipenv install --dev
 ```
 
 3. Set up the database:
@@ -24,6 +30,16 @@ pipenv install
 from app import db
 db.create_all()
 exit()
+```
+
+4. Running the Application
+- To run the application, use one of the following commands:
+```bash
+python3 -m pipenv shell
+pip install flask-cors
+pip install requests
+export FLASK_APP=flask-server.api
+flask run
 ```
 
 ## Features (Written by YenChen)
