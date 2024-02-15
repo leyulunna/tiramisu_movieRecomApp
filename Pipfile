@@ -8,6 +8,7 @@ flask = "*"
 flask-sqlalchemy = "*"
 gunicorn = "*"
 importlib-metadata = "*"
+flask-cors = "*"
 
 [dev-packages]
 
