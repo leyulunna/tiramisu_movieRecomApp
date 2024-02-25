@@ -7,6 +7,10 @@ from . import omdb
 main = Blueprint('main', __name__)
 
 ## Lena(Yu-Lun) Feature
+@main.route('/')
+def home():
+    return 'Welcome to my Flask app!'
+
 def fetch_from_movies(query):
     # Clear existing data in Search table
     db.session.query(Search).delete()
