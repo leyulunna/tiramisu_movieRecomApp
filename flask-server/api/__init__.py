@@ -23,6 +23,9 @@ def create_app():
 
     db.init_app(app)
 
+    # 确保在调用 db.create_all() 之前导入模型
+    from .models import Movie, Search
+
     from .views import main
     app.register_blueprint(main)
 

@@ -6,9 +6,10 @@ import FavoriteMovies from './FavoriteMovies'
 const App = () => {
   const [movies, setMovies] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const api = 'https://movie-recom-app-3003b9be733c.herokuapp.com';
 
   const handleSearch = (query) => {
-    fetch(`http://127.0.0.1:5000/search_movies?query=${encodeURIComponent(query)}`)
+    fetch(api + `/search_movies?query=${encodeURIComponent(query)}`)
       .then(response => response.json())
       .then(data => {
         setMovies(data);
@@ -23,7 +24,7 @@ const App = () => {
   };
 
   const handleAddFavorite = (imdbID) => {
-    fetch(`http://127.0.0.1:5000/add_to_favorites`, {
+    fetch(api + `/add_to_favorites`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

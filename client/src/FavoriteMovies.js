@@ -4,9 +4,10 @@ const FavoriteMovies = () => {
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const api = 'https://movie-recom-app-3003b9be733c.herokuapp.com';
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/movies/favorites')
+    fetch(api + '/movies/favorites')
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch.');
