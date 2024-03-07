@@ -1,0 +1,10 @@
+.header {
+  display: inline-flex;
+  margin: 10px 20px;
+  align-items: center;
+}
+
+.header button {
+  margin: 0 10px;
+  height: fit-content;
+}

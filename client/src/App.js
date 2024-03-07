@@ -2,10 +2,11 @@ import React, {useState} from 'react'
 import SearchBar from './SearchBar'
 import MovieList from './MovieList'
 import FavoriteMovies from './FavoriteMovies'
+import { Tabs, Tab } from 'react-bootstrap';
 
 const App = () => {
   const [movies, setMovies] = useState([]);
-  const [showFavorites, setShowFavorites] = useState(false);
+  const [key, setKey] = useState("search");
   const api = 'https://movie-recom-app-3003b9be733c.herokuapp.com';
 
   const handleSearch = (query) => {
@@ -17,10 +18,6 @@ const App = () => {
       .catch(error => {
         console.error('Error:', error);
       });
-  };
-
-  const toggleShowFavorites = () => {
-    setShowFavorites(!showFavorites);
   };
 
   const handleAddFavorite = (imdbID) => {
@@ -48,17 +45,19 @@ const App = () => {
   };
 
   return (
-    <div>
-      <div>
-        <button onClick={toggleShowFavorites}>
-          {showFavorites ? "Show Search Results" : "Show Favorite Movies"}
-        </button>
-      </div>
-      <div>
+    <Tabs
+      activeKey={key}
+      onSelect={(k) => setKey(k)}
+      className="mb-3"
+    >
+      <Tab eventKey="search" title="Search">
         <SearchBar onSearch={handleSearch} />
-        {showFavorites ? <FavoriteMovies /> : <MovieList movies={movies} onAddFavorite={handleAddFavorite} />}
-      </div>
-    </div>
+        <MovieList movies={movies} onAddFavorite={handleAddFavorite} />
+      </Tab>
+      <Tab eventKey="fav" title="My Favorite List">
+        <FavoriteMovies />
+      </Tab>
+    </Tabs>
   );
 }
 

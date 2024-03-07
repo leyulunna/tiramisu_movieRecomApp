@@ -1,18 +1,23 @@
 import React from 'react'
-import { FaHeart } from 'react-icons/fa';
+import { FaHeart } from 'react-icons/fa'
+import { Button, Card } from 'react-bootstrap'
 
 const MovieList = ({ movies, onAddFavorite }) => {
   return (
     <div>
-      {movies.map((movie) => (
-        <div key={movie.imdbID}>
-          <h3>{movie.title}</h3>
-          <p>{movie.year}</p>
-          <button onClick={() => onAddFavorite(movie.imdbID)}>
-            <FaHeart /> Add to Favorites
-          </button>
-        </div>
-      ))}
+      <div>
+        {movies.map((movie) => (
+          <Card key={movie.imdbID} style={{ width: '18rem' }}>
+            <Card.Body>
+              <Card.Title>{movie.title}</Card.Title>
+              <Card.Text>{movie.year}</Card.Text>
+              <Button variant="primary" size="sm" onClick={() => onAddFavorite(movie.imdbID)}>
+                <FaHeart /> Add to Favorites
+              </Button>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
